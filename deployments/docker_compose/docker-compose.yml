@@ -1,0 +1,64 @@
+services:
+  # --- Main Application Service ---
+  aac-trilium:
+    image: "triliumnext/trilium:v0.106.1"
+    container_name: "aac-trilium"
+    hostname: "notes"
+    restart: "unless-stopped"
+
+
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: "Europe/Berlin"
+      USER_UID: "1000"
+      USER_GID: "1000"
+
+    ports:
+      - "8181:8080/tcp"
+
+    volumes:
+      - "/export/docker/aac-trilium/data:/home/node/trilium-data"
+
+    networks:
+      - exposed
+      - interconnect
+      - secured
+      - stack_internal
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.aac-trilium.rule: "Host(`notes.example.com`)"
+      traefik.http.routers.aac-trilium.entrypoints: "websecure"
+      traefik.http.routers.aac-trilium.tls: "true"
+      traefik.http.routers.aac-trilium.tls.certresolver: "ionos"
+      traefik.docker.network: "services-secured"
+      traefik.http.services.aac-trilium.loadbalancer.server.port: "8080"
+      traefik.http.services.aac-trilium.loadbalancer.server.scheme: "http"
+      auto-dns.createWildcard.aac-trilium: "false"
+      auto-dns.customDNS.aac-trilium: "true"
+      auto-dns.customDOMAIN.aac-trilium: "example.com"
+      auto-dns.customHost.aac-trilium: "notes"
+      homepage.group: "Finanzen - Dokumente - Organisation"
+      homepage.name: "Trilium"
+      homepage.href: "https://notes.example.com"
+      homepage.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/trilium.png"
+      homepage.description: "Hierarchical note taking application & personal knowledge base"
+
+
+
+
+networks:
+  secured:
+    name: "services-secured"
+    external: true
+  exposed:
+    name: "services-exposed"
+    external: true
+  interconnect:
+    name: "docker-default"
+    external: true
+  stack_internal:
+    name: "aac-trilium_stack_internal"
+    driver: "bridge"
+

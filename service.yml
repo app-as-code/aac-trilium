@@ -1,0 +1,75 @@
+service:
+  name: aac-trilium
+  image_repo: triliumnext/trilium
+  image_tag: v0.106.1
+  description: Hierarchical note taking application & personal knowledge base
+  icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/trilium.png
+  category: Finanzen - Dokumente - Organisation
+  stage: prod
+  hostname: notes
+ports:
+- name: web
+  port: 8080
+  external_port: 8181
+  protocol: TCP
+config:
+  domain_name: example.com
+  generate_hostname: false
+  integrations:
+    homepage:
+      enabled: true
+    autodns:
+      enabled: true
+      create_wildcard: false
+    traefik:
+      enabled: true
+      cert_resolver: ionos
+      entrypoint: websecure
+  schema_version: 2
+stage_overrides:
+  prod:
+    config:
+      generate_hostname: false
+    service:
+      hostname: notes
+volumes:
+  data:
+    description: Trilium Notes data directory
+deployment_strategy:
+  main:
+    enabled: true
+    target_stage: prod
+  dev:
+    enabled: true
+    target_stage: dev
+  test:
+    enabled: false
+    target_stage: test
+  ansible-dev:
+    enabled: true
+    target_stage: dev
+  iac-dev:
+    enabled: true
+    target_stage: dev
+  template-dev:
+    enabled: true
+    target_stage: dev
+deployments:
+  docker_compose:
+    restart_policy: unless-stopped
+    host_base_path: /export/docker
+    volumes:
+    - data:/home/node/trilium-data
+    environment:
+      PUID: '{{ vars.PUID }}'
+      PGID: '{{ vars.PGID }}'
+      TZ: '{{ vars.TZ }}'
+      USER_UID: '{{ vars.USER_UID }}'
+      USER_GID: '{{ vars.USER_GID }}'
+vars:
+  PUID: '1000'
+  PGID: '1000'
+  TZ: Europe/Berlin
+  USER_UID: '1000'
+  USER_GID: '1000'
+secrets: {}
